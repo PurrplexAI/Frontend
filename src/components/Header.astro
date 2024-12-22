@@ -1,0 +1,34 @@
+---
+
+---
+
+<div class="wrapper">
+    <header class="header">
+        <h1 class="title">{"<Purrplex />"}</h1>
+    </header>
+</div>
+
+<style lang="scss" scoped>
+    .wrapper {
+        color: #ffffff;
+        background: transparent;
+        backdrop-filter: blur(10px);
+        border-bottom: #555 1px solid;
+        user-select: none;
+        position: absolute sticky;
+        padding: 0.5rem;
+        cursor: default;
+
+        & header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        & .title {
+            font-size: 1.5rem;
+            margin: 0;
+            font-weight: 300;
+        }
+    }
+</style>
