@@ -3,11 +3,8 @@
 Prerequisites:
 - pnpm: `npm i -g pnpm` + `pnpm setup`
 - python
+- not windows
 
 Running:
-- Bootstrap: `pnpm i`
-- Run: `pnpm dev`
-
-Resetting:
-- Clean: `pnpm clean`
-- Reset: `pnpm reset` (DANGER: THIS WILL CLEAR ALL "PROGRESS" MADE)
+- Bootstrap: `bin/flux --bootstrap`
+- Run: `bin/flux --dev`
