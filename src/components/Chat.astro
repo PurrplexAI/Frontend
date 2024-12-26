@@ -1,4 +1,5 @@
 ---
+
 ---
 
 <div class="chat-container">
@@ -29,45 +30,63 @@
         if (!message || !textarea) return;
         textarea.value = "";
 
+        const previousResponse = document.querySelector("#ai-response");
+        if (previousResponse) {
+            previousResponse.textContent = "";
+        }
+
         const messagesContainer = document.querySelector(".messages-container");
         if (messagesContainer) {
             const color = "#727272";
+            const messageId = Date.now();
             messagesContainer.innerHTML += `
                 <div style="margin-bottom: 1rem;">
-                    <div style="color:${color};user-select:none;cursor:defualt;font-size:1rem;">You:</div>
+                    <div style="color:${color}">You:</div>
                     <div>${message}</div>
                 </div>
                 <div style="margin-bottom: 1rem;">
-                    <div style="color:${color};user-select:none;cursor:defualt;font-size:1rem;">AI:</div>
-                    <div id="ai-response"></div>
+                    <div style="color:${color}">AI:</div>
+                    <div id="ai-response-${messageId}" class="ai-response"></div>
                 </div>
             `;
+
+            const aiResponse = document.querySelector(
+                `#ai-response-${messageId}`,
+            );
+            aiResponse?.classList.add("ai-response");
+
+            const response = await fetch("/api/chat", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-user-id": "1",
+                    "x-chat-message": message,
+                },
+            });
+
+            const reader = response.body?.getReader();
+            const decoder = new TextDecoder();
+
+            while (reader) {
+                try {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    const chunk = decoder.decode(value, { stream: true });
+                    if (aiResponse) {
+                        const chunkSpan = document.createElement('span');
+                        chunkSpan.textContent = chunk;
+                        aiResponse.appendChild(chunkSpan);
+                    }
+                } catch (error) {
+                    console.error("Stream error:", error);
+                    break;
+                }
+            }
+
+            if (!messagesContainer) return;
+
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
-
-        const response = await fetch("/api/chat", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ message }),
-        });
-
-        const reader = response.body?.getReader();
-        const decoder = new TextDecoder();
-        const aiResponse = document.querySelector("#ai-response");
-
-        while (reader) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            const text = decoder.decode(value);
-            if (!aiResponse) return;
-            aiResponse.textContent += text;
-
-        }
-
-        if (!messagesContainer) return;
-
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 
     textarea?.addEventListener("keydown", (event: KeyboardEvent) => {
@@ -135,8 +154,8 @@
         user-select: none;
 
         &:focus-within {
-            box-shadow: 0 0 15px rgba(132, 0, 255, 0.123);
-            border-color: rgba(172, 100, 255, 0.116);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.041);
+            border-color: rgba(255, 255, 255, 0.116);
         }
     }
 
@@ -201,5 +220,11 @@
             width: 1.2rem;
             height: 1.2rem;
         }
+    }
+
+    .ai-response {
+        min-width: 20ch;
+        line-height: 1.5;
+        white-space: pre-wrap;
     }
 </style>

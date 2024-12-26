@@ -6,12 +6,16 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "clean": "rm -rf node_modules pnpm-lock.yaml"
   },
   "dependencies": {
-    "astro": "^5.1.1"
+    "astro": "^5.1.1",
+    "openai": "^4.77.0"
   },
   "devDependencies": {
+    "@types/node": "^22.10.2",
+    "dotenv": "^16.4.7",
     "sass-embedded": "^1.83.0"
   }
 }

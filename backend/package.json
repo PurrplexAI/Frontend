@@ -1,7 +1,0 @@
-{
-  "name": "backend",
-  "version": "1.0.0",
-  "scripts": {
-    "postinstall": "chmod +x bin/setup ; bin/setup"
-  }
-}
