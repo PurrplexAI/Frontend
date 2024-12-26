@@ -2,40 +2,14 @@ export const prerender = false;
 
 import * as utils from "../../lib/utility";
 import OpenAI from "openai";
+import db from '../../lib/db';
+import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
 
 const openai = new OpenAI({
     apiKey: utils.getEnvVariable("OPENAI_API_KEY")
 });
 
 const system_prompt = "You are a helpful assistant.";
-const userSessions = new Map();
-
-interface ChatMessage {
-    role: 'system' | 'user' | 'assistant';
-    content: string;
-    timestamp?: number;
-}
-
-function getUserSession(userId: string) {
-    if (!userSessions.has(userId)) {
-        userSessions.set(userId, [
-            { 
-                role: 'system', 
-                content: system_prompt,
-                timestamp: Date.now()
-            }
-        ]);
-    }
-    return userSessions.get(userId);
-}
-
-function updateAssistantMessage(userId: string, content: string) {
-    const messages = getUserSession(userId);
-    const lastMessage = messages[messages.length - 1];
-    if (lastMessage.role === 'assistant') {
-        lastMessage.content += content;
-    }
-}
 
 export async function POST({ request }: { request: Request }) {
     const userId = request.headers.get('x-user-id');
@@ -46,24 +20,26 @@ export async function POST({ request }: { request: Request }) {
     }
 
     try {
-        const messages = getUserSession(userId);
-        messages.push({ 
-            role: 'user', 
-            content: message,
-            timestamp: Date.now()
-        });
+        const insertMsg = db.prepare('INSERT INTO messages (content, role, user_id) VALUES (?, ?, ?)');
+        insertMsg.run(message, 'user', userId);
+
+        const getMessages = db.prepare('SELECT role, content FROM messages WHERE user_id = ? ORDER BY id ASC');
+        const previousMessages = getMessages.all(userId) as Array<{ role: 'user' | 'assistant', content: string }>;
+
+        const messages: ChatCompletionMessageParam[] = [
+            { role: 'system', content: system_prompt },
+            ...previousMessages.map(msg => ({ role: msg.role, content: msg.content }))
+        ];
 
         const stream = await openai.chat.completions.create({
             model: "gpt-3.5-turbo-1106",
-            messages: messages.map((map: ChatMessage) => ({ role: map.role, content: map.content })),
+            messages,
             stream: true,
         });
 
-        messages.push({ 
-            role: 'assistant', 
-            content: '',
-            timestamp: Date.now()
-        });
+        const insertAssistant = db.prepare('INSERT INTO messages (content, role, user_id) VALUES (?, ?, ?)');
+        const result = insertAssistant.run('', 'assistant', userId);
+        const msgId = result.lastInsertRowid;
 
         const encoder = new TextEncoder();
         const readable = new ReadableStream({
@@ -72,7 +48,8 @@ export async function POST({ request }: { request: Request }) {
                     const content = chunk.choices[0]?.delta?.content || '';
                     if (content) {
                         controller.enqueue(encoder.encode(content));
-                        updateAssistantMessage(userId, content);
+                        const updateMsg = db.prepare('UPDATE messages SET content = content || ? WHERE id = ?');
+                        updateMsg.run(content, msgId);
                     }
                 }
                 controller.close();

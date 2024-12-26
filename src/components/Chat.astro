@@ -75,6 +75,7 @@
                     if (aiResponse) {
                         const chunkSpan = document.createElement('span');
                         chunkSpan.textContent = chunk;
+                        chunkSpan.className = 'new-chunk';
                         aiResponse.appendChild(chunkSpan);
                     }
                 } catch (error) {
@@ -101,6 +102,15 @@
 </script>
 
 <style lang="scss">
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
     .chat-container {
         position: absolute;
         top: 3rem;
@@ -227,4 +237,5 @@
         line-height: 1.5;
         white-space: pre-wrap;
     }
+
 </style>

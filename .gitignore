@@ -3,6 +3,7 @@
 
 # generated types
 /.astro/
+/.drizzle/
 
 # dependencies
 /node_modules/
@@ -14,11 +15,17 @@
 /pnpm-debug.log*
 
 # environment variables
-**/*.env
-**/*.env.production
+.env
+.env.production
+!.env.example
 
 # macOS-specific files
 **/*.DS_Store
 
 # jetbrains setting folder
 **/*.idea/
+
+# database files
+*.db
+*.db-journal
+/migrations/

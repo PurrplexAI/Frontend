@@ -1,5 +1,5 @@
 {
-  "name": "frontend",
+  "name": "purrplex",
   "type": "module",
   "version": "0.0.1",
   "scripts": {
@@ -7,15 +7,21 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "clean": "rm -rf node_modules pnpm-lock.yaml"
+    "clean": "rm -rf node_modules pnpm-lock.yaml sqlite.db sqlite.db-journal",
+    "postinstall": "node -e \"const Database=require('better-sqlite3');const db=new Database('sqlite.db');db.exec('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT,username TEXT NOT NULL,username_hash TEXT NOT NULL,password TEXT NOT NULL);CREATE TABLE IF NOT EXISTS chats (id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,title TEXT NOT NULL,FOREIGN KEY(user_id) REFERENCES users(id));CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT,content TEXT NOT NULL,role TEXT NOT NULL,user_id TEXT NOT NULL,chat_id INTEGER NOT NULL,FOREIGN KEY(chat_id) REFERENCES chats(id));')\""
   },
   "dependencies": {
     "astro": "^5.1.1",
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^11.7.0",
     "openai": "^4.77.0"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/better-sqlite3": "^7.6.12",
     "@types/node": "^22.10.2",
     "dotenv": "^16.4.7",
-    "sass-embedded": "^1.83.0"
+    "sass-embedded": "^1.83.0",
+    "tsx": "^4.7.1"
   }
 }

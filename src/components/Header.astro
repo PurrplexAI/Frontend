@@ -1,13 +1,50 @@
 ---
+
 ---
 
 <div class="wrapper">
     <header class="header">
-        <h1 class="title">{"<Purrplex />"}</h1>
+        <a class="title" href="/">{"<Purrplex />"}</a>
+        <nav>
+            <div class="auth-section">
+                <span id="username-display"></span>
+                <button id="auth-button" class="auth-button">Login</button>
+            </div>
+        </nav>
     </header>
 </div>
 
-<style lang="scss" scoped>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const authButton = document.getElementById("auth-button");
+        const usernameDisplay = document.getElementById("username-display");
+        const userId = localStorage.getItem("userId");
+
+        if (userId) {
+            fetch(`/api/user/${userId}`)
+                .then((res) => res.json())
+                .then((user) => {
+                    if (usernameDisplay) {
+                        usernameDisplay.textContent = `Welcome, ${user.username}!`;
+                    }
+                    if (authButton) {
+                        authButton.textContent = "Logout?";
+                    }
+                });
+        }
+
+        authButton?.addEventListener("click", () => {
+            if (userId) {
+                localStorage.removeItem("userId");
+                window.location.href = "/login";
+            } else {
+                window.location.href = "/login";
+            }
+        });
+    });
+</script>
+
+<style scoped lang="scss">
     .wrapper {
         color: #ffffff;
         background: transparent;
@@ -17,17 +54,34 @@
         position: absolute sticky;
         padding: 0.5rem;
         cursor: default;
+    }
 
-        & header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
 
-        & .title {
-            font-size: 1.5rem;
-            margin: 0;
-            font-weight: 300;
-        }
+    .title {
+        color: white;
+        text-decoration: none;
+        font-size: 1.5rem;
+        margin: 0;
+        font-weight: 300;
+    }
+
+    nav {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+    }
+
+    .auth-button {
+        color: white;
+        background: transparent;
+        border: none;
+        outline: none;
+        font-size: 100%;
+        cursor: pointer;
     }
 </style>
