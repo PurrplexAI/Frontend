@@ -1,0 +1,3 @@
+#!/bin/bash
+
+python3 .flux/thoqdev/flux.py "$@"

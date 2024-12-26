@@ -1,0 +1,16 @@
+{
+    "flux": {
+        "bootstrap:frontend": "cd frontend/ ; pnpm install",
+        "bootstrap:backend": "cd backend/ ; python3 -m venv .venv ; . .venv/bin/activate ; pip install -r requirements.txt",
+
+        "clean:frontend": "cd frontend/ ; rm -rf node_modules pnpm-lock.yaml",
+        "clean:backend": "cd backend/ ; rm -rf .venv __pycache__",
+
+        "dev:frontend": "cd frontend/ ; pnpm dev",
+        "dev:backend": "cd backend/ ; . .venv/bin/activate ; flask --debug run",
+
+        "clean": "bin/flux --clean:frontend && bin/flux --clean:backend",
+        "bootstrap": "bin/flux --bootstrap:frontend && bin/flux --bootstrap:backend",
+        "dev": "npm i -g concurrently && concurrently \"bin/flux --dev:frontend\" \"bin/flux --dev:backend\""
+    }
+}
