@@ -29,15 +29,6 @@
         if (!message || !textarea) return;
         textarea.value = "";
 
-        const response = await fetch("/api/chat", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ message }),
-        });
-
-        const data = await response.json();
         const messagesContainer = document.querySelector(".messages-container");
         if (messagesContainer) {
             const color = "#727272";
@@ -48,11 +39,35 @@
                 </div>
                 <div style="margin-bottom: 1rem;">
                     <div style="color:${color};user-select:none;cursor:defualt;font-size:1rem;">AI:</div>
-                    <div>${data.message}</div>
+                    <div id="ai-response"></div>
                 </div>
             `;
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
+
+        const response = await fetch("/api/chat", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ message }),
+        });
+
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
+        const aiResponse = document.querySelector("#ai-response");
+
+        while (reader) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            const text = decoder.decode(value);
+            if (!aiResponse) return;
+            aiResponse.textContent += text;
+
+        }
+
+        if (!messagesContainer) return;
+
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 
     textarea?.addEventListener("keydown", (event: KeyboardEvent) => {
@@ -95,8 +110,10 @@
         overflow-y: auto;
         padding: 1rem;
         padding-bottom: 80px;
-        max-width: 50vw;
-        margin: 0 auto;
+        max-width: 40vw;
+        margin: 0;
+        margin-left: 50%;
+        transform: translateX(-50%);
         position: relative;
     }
 
